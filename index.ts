@@ -1,6 +1,6 @@
 import { Node, Schema } from 'prosemirror-model';
 import { Step, Transform } from 'prosemirror-transform';
-import { createPatch, Operation } from 'rfc6902';
+import { applyPatch, createPatch, Operation } from 'rfc6902';
 
 function steps2ops(doc: Node, steps: Step[]): Operation[] {
 	let resultDoc = doc;
@@ -15,6 +15,22 @@ function steps2ops(doc: Node, steps: Step[]): Operation[] {
 		}
 	});
 	return resultOps;
+}
+
+function runTest(doc: Node, tr: Transform) {
+	const genericDoc = doc.toJSON();
+	const ops = steps2ops(doc, tr.steps);
+	applyPatch(genericDoc, ops);
+	console.warn('input ProseMirror doc:')
+	console.warn(JSON.stringify(doc))
+	console.warn('JSON Patch operations:')
+	console.warn(pretty(ops));
+	console.warn('steps:')
+	console.warn(pretty(tr.steps));
+	console.warn('output doc (ProseMirror):')
+	console.warn(JSON.stringify(tr.doc));
+	console.warn('output doc (JSON Patch):')
+	console.warn(JSON.stringify(genericDoc));
 }
 
 const schema = new Schema({
@@ -39,15 +55,5 @@ const doc = Node.fromJSON(schema, {
 
 const pretty = (o: any) => JSON.stringify(o, null, 4);
 
-console.warn('input doc:')
-console.warn(pretty(doc))
-const tr = new Transform(doc).insert(2, schema.text(' there', [schema.marks.bold.create()]));
-console.warn('ops:')
-const ops = steps2ops(doc, tr.steps);
-console.warn(pretty(ops));
-console.warn('steps:')
-console.warn(pretty(tr.steps));
-
-console.warn('output doc:')
-console.warn(pretty(tr.doc));
+runTest(doc, new Transform(doc).insert(2, schema.text(' there', [schema.marks.bold.create()])))
 
