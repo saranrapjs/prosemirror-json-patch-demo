@@ -2,6 +2,11 @@ import { Node, Schema } from 'prosemirror-model';
 import { Step, Transform } from 'prosemirror-transform';
 import { applyPatch, createPatch, Operation } from 'rfc6902';
 
+/**
+ * For a given set of ProseMirror steps, apply each one,
+ * and return the JSON Patch describing the prevDoc / doc
+ * described by each step in a sequence of steps.
+ */
 function steps2ops(doc: Node, steps: Step[]): Operation[] {
 	let resultDoc = doc;
 	const resultOps: Operation[] = [];
@@ -17,6 +22,11 @@ function steps2ops(doc: Node, steps: Step[]): Operation[] {
 	return resultOps;
 }
 
+/**
+ * This produces debugging-friendly output for illustrating
+ * the ways in which steps/JSON patches do (or don't) resemble
+ * each other
+ */
 function runTest(doc: Node, tr: Transform) {
 	const genericDoc = doc.toJSON();
 	const ops = steps2ops(doc, tr.steps);
